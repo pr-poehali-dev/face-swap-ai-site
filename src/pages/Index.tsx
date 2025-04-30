@@ -5,24 +5,48 @@ import { ImageUploader } from "@/components/ImageUploader";
 import { FaceSwapResult } from "@/components/FaceSwapResult";
 import { HowItWorks } from "@/components/HowItWorks";
 import { useState } from "react";
-import { Rocket, Image, Wand2 } from "lucide-react";
+import { Rocket, Image, Wand2, AlertCircle } from "lucide-react";
+import { faceSwapService } from "@/lib/api";
+import { toast } from "sonner";
 
 const Index = () => {
   const [sourceImage, setSourceImage] = useState<string | null>(null);
   const [targetImage, setTargetImage] = useState<string | null>(null);
   const [resultImage, setResultImage] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSwapFaces = () => {
-    // В реальном приложении здесь будет вызов API для обработки изображений
-    setIsProcessing(true);
+  const handleSwapFaces = async () => {
+    if (!sourceImage || !targetImage) return;
     
-    // Имитация обработки AI
-    setTimeout(() => {
-      // В настоящем приложении здесь будет результат от API
-      setResultImage(targetImage); // Временно используем целевое изображение как результат
+    setIsProcessing(true);
+    setError(null);
+    
+    try {
+      // Используем демо метод, если API_KEY не установлен
+      // В реальном приложении используйте .swapFaces вместо .demoSwapFaces
+      const isDemoMode = import.meta.env.VITE_FACESWAP_API_KEY === undefined;
+      const swapMethod = isDemoMode ? faceSwapService.demoSwapFaces : faceSwapService.swapFaces;
+      
+      const result = await swapMethod(sourceImage, targetImage);
+      
+      if (result.success) {
+        setResultImage(result.resultUrl);
+        toast.success("Готово!", {
+          description: result.message || "Изображение успешно обработано"
+        });
+      } else {
+        setError(result.message || "Не удалось обработать изображения");
+        toast.error("Ошибка", {
+          description: result.message || "Не удалось обработать изображения"
+        });
+      }
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : "Неизвестная ошибка";
+      setError(errorMessage);
+    } finally {
       setIsProcessing(false);
-    }, 2000);
+    }
   };
 
   return (
@@ -76,6 +100,13 @@ const Index = () => {
             </CardContent>
           </Card>
         </div>
+
+        {error && (
+          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-md text-red-600 flex items-center gap-2">
+            <AlertCircle className="h-5 w-5" />
+            <p>{error}</p>
+          </div>
+        )}
 
         <div className="flex justify-center mb-12">
           <Button 
