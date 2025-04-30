@@ -1,20 +1,19 @@
 
-import './App.css'
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
-import Index from './pages/Index'
-import NotFound from './pages/NotFound'
-import { Toaster } from 'sonner'
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import Index from "@/pages/Index";
+import NotFound from "@/pages/NotFound";
+import { Toaster } from "@/components/ui/sonner";
 
 function App() {
   return (
     <Router>
-      <Toaster position="top-center" richColors closeButton />
       <Routes>
         <Route path="/" element={<Index />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
+      <Toaster position="top-center" />
     </Router>
-  )
+  );
 }
 
-export default App
+export default App;
